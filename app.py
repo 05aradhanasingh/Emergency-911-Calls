@@ -9,29 +9,43 @@ st.set_page_config(page_title="911 Calls Dashboard", layout="wide")
 
 @st.cache_data
 def load_data(path):
-    df = pd.read_csv(path, compression='gzip')
-    if 'title' not in df.columns:
-        st.error("'title' column is missing in the dataset.")
+    try:
+        df = pd.read_csv(path, compression='gzip')
+    except Exception as e:
+        st.error(f"Error loading file: {e}")
         st.stop()
-    df.loc[:, 'Category'] = df['title'].apply(lambda x: x.split(':')[0] if ':' in x else x)
+
+    expected_cols = {'lat', 'lng', 'desc', 'zip', 'title', 'timeStamp', 'twp', 'addr', 'e'}
+    missing = expected_cols - set(df.columns)
+    if missing:
+        st.error(f"Missing expected columns: {', '.join(missing)}")
+        st.stop()
+
+    df['Category'] = df['title'].apply(lambda x: x.split(':')[0] if isinstance(x, str) and ':' in x else x)
     df['timeStamp'] = pd.to_datetime(df['timeStamp'], errors='coerce')
-    return df.dropna(subset=['timeStamp', 'lat', 'lng'])
+    df = df.dropna(subset=['timeStamp', 'lat', 'lng'])
+    return df
 
 df = load_data("compressed_data.csv.gz")
 
-st.title("911 Calls Exploratory Dashboard")
+st.title("📟 911 Calls Exploratory Dashboard")
 st.markdown("##### Acknowledgements: Data provided by montcoalert.org")
 
 st.sidebar.header("Filters")
 categories = st.sidebar.multiselect(
     "Select Emergency Categories",
-    options=df['Category'].unique(),
-    default=df['Category'].unique()
+    options=sorted(df['Category'].unique()),
+    default=sorted(df['Category'].unique())
 )
+
+min_date = df['timeStamp'].min().date()
+max_date = df['timeStamp'].max().date()
 
 date_range = st.sidebar.date_input(
     "Date range",
-    [df['timeStamp'].min().date(), df['timeStamp'].max().date()]
+    [min_date, max_date],
+    min_value=min_date,
+    max_value=max_date
 )
 
 sample_size = st.sidebar.slider(
@@ -44,11 +58,15 @@ filtered = df[
     (df['timeStamp'].dt.date.between(date_range[0], date_range[1]))
 ]
 
-st.markdown("### Data Preview")
+if filtered.empty:
+    st.warning("⚠️ No data found for the selected filters.")
+    st.stop()
+
+st.markdown("### 🔍 Data Preview")
 st.dataframe(filtered.head())
 
-st.markdown("### Heatmap of All Calls")
-heat_data = filtered[['lat', 'lng']].dropna().values.tolist()
+st.markdown("### 🌡️ Heatmap of 911 Calls")
+heat_data = filtered[['lat', 'lng']].dropna().astype(float).values.tolist()
 
 if heat_data:
     heatmap_map = folium.Map(
@@ -59,22 +77,21 @@ if heat_data:
     HeatMap(heat_data, radius=10, blur=25).add_to(heatmap_map)
     st_folium(heatmap_map, width=700, height=500)
 else:
-    st.warning("No data to display on heatmap. Adjust filters or check your dataset.")
+    st.warning("No data to show on heatmap.")
 
-st.markdown("### Scatter Geo Plot by Category (Philadelphia Area)")
+st.markdown("### 🗺️ Scatter Geo Plot by Category (Philadelphia Area)")
 
 philly_lat = 39.9526
 philly_lon = -75.1652
-
-scatter_sample = filtered.sample(min(len(filtered), sample_size))
+scatter_sample = filtered.sample(min(len(filtered), sample_size), random_state=42)
 
 scatter_fig = px.scatter_geo(
     scatter_sample,
     lat='lat',
     lon='lng',
     color='Category',
-    title='911 Calls Distribution by Category (Philadelphia)',
-    hover_data={'lat': True, 'lng': True, 'Category': True},
+    title='911 Calls by Category (Philadelphia Area)',
+    hover_data=['desc', 'zip', 'twp'],
     scope='usa',
     height=600
 )
@@ -82,31 +99,22 @@ scatter_fig = px.scatter_geo(
 scatter_fig.update_geos(
     center={"lat": philly_lat, "lon": philly_lon},
     projection_type="azimuthal equal area",
-    fitbounds=False,
-    resolution=50,
     lataxis_range=[39.8, 40.1],
-    lonaxis_range=[-75.3, -74.9],
-    showland=True
-)
-
-scatter_fig.update_layout(
-    margin={"r": 0, "t": 50, "l": 0, "b": 0},
-    paper_bgcolor='white',
-    plot_bgcolor='white'
+    lonaxis_range=[-75.3, -74.9]
 )
 
 st.plotly_chart(scatter_fig, use_container_width=True)
 
-st.markdown("### Call Volume by Day of Week")
+st.markdown("### 📊 Call Volume by Day of Week")
 dow_fig = px.histogram(
     filtered.assign(day=filtered['timeStamp'].dt.day_name()),
     x='day',
     category_orders={'day': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']},
-    title="Call Volume by Day of Week"
+    title="Call Volume Distribution by Day"
 )
 st.plotly_chart(dow_fig, use_container_width=True)
 
-st.markdown("### Summary Statistics")
+st.markdown("### 📈 Summary Statistics")
 st.write(filtered[['Category', 'timeStamp', 'zip', 'twp']].describe(include='all'))
 
 st.markdown(
@@ -117,5 +125,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
