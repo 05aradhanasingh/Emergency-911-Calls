@@ -5,6 +5,9 @@ from folium.plugins import HeatMap
 import plotly.express as px
 from streamlit_folium import st_folium
 
+st.cache_data.clear()
+
+
 st.set_page_config(page_title="911 Calls Dashboard", layout="wide")
 
 @st.cache_data
