@@ -7,7 +7,6 @@ from streamlit_folium import st_folium
 
 st.cache_data.clear()
 
-
 st.set_page_config(page_title="911 Calls Dashboard", layout="wide")
 
 @st.cache_data
@@ -24,14 +23,21 @@ def load_data(path):
         st.error(f"Missing expected columns: {', '.join(missing)}")
         st.stop()
 
-    df['Category'] = df['title'].apply(lambda x: x.split(':')[0] if isinstance(x, str) and ':' in x else x)
+    if 'Category' not in df.columns:
+        df['Category'] = df['title'].astype(str).apply(
+            lambda x: x.split(':')[0] if ':' in x else x
+        )
+
     df['timeStamp'] = pd.to_datetime(df['timeStamp'], errors='coerce')
     df = df.dropna(subset=['timeStamp', 'lat', 'lng'])
+
     return df
 
 df = load_data("compressed_data.csv.gz")
 
-st.title("📟 911 Calls Exploratory Dashboard")
+assert 'Category' in df.columns, "'Category' column creation failed!"
+
+st.title(" 911 Calls Exploratory Dashboard")
 st.markdown("##### Acknowledgements: Data provided by montcoalert.org")
 
 st.sidebar.header("Filters")
@@ -62,13 +68,13 @@ filtered = df[
 ]
 
 if filtered.empty:
-    st.warning("⚠️ No data found for the selected filters.")
+    st.warning("No data found for the selected filters.")
     st.stop()
 
 st.markdown("### 🔍 Data Preview")
 st.dataframe(filtered.head())
 
-st.markdown("### 🌡️ Heatmap of 911 Calls")
+st.markdown("###  Heatmap of 911 Calls")
 heat_data = filtered[['lat', 'lng']].dropna().astype(float).values.tolist()
 
 if heat_data:
@@ -108,7 +114,7 @@ scatter_fig.update_geos(
 
 st.plotly_chart(scatter_fig, use_container_width=True)
 
-st.markdown("### 📊 Call Volume by Day of Week")
+st.markdown("###  Call Volume by Day of Week")
 dow_fig = px.histogram(
     filtered.assign(day=filtered['timeStamp'].dt.day_name()),
     x='day',
@@ -117,7 +123,7 @@ dow_fig = px.histogram(
 )
 st.plotly_chart(dow_fig, use_container_width=True)
 
-st.markdown("### 📈 Summary Statistics")
+st.markdown("###  Summary Statistics")
 st.write(filtered[['Category', 'timeStamp', 'zip', 'twp']].describe(include='all'))
 
 st.markdown(
@@ -128,6 +134,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-
-
