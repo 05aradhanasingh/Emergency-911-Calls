@@ -13,7 +13,7 @@ def load_data(path):
     if 'title' not in df.columns:
         st.error("'title' column is missing in the dataset.")
         st.stop()
-    df['Category'] = df['title'].apply(lambda x: x.split(':')[0] if ':' in x else x)
+    df.loc[:, 'Category'] = df['title'].apply(lambda x: x.split(':')[0] if ':' in x else x)
     df['timeStamp'] = pd.to_datetime(df['timeStamp'], errors='coerce')
     return df.dropna(subset=['timeStamp', 'lat', 'lng'])
 
@@ -47,7 +47,6 @@ filtered = df[
 st.markdown("### Data Preview")
 st.dataframe(filtered.head())
 
-# Heatmap
 st.markdown("### Heatmap of All Calls")
 heat_data = filtered[['lat', 'lng']].dropna().values.tolist()
 
@@ -76,35 +75,33 @@ scatter_fig = px.scatter_geo(
     color='Category',
     title='911 Calls Distribution by Category (Philadelphia)',
     hover_data={'lat': True, 'lng': True, 'Category': True},
-    scope='usa',  
+    scope='usa',
     height=600
 )
 
 scatter_fig.update_geos(
     center={"lat": philly_lat, "lon": philly_lon},
-    projection_type="azimuthal equal area",  
+    projection_type="azimuthal equal area",
     fitbounds=False,
     resolution=50,
-    visible=False,
     lataxis_range=[39.8, 40.1],
     lonaxis_range=[-75.3, -74.9],
     showland=True
 )
 
 scatter_fig.update_layout(
-    margin={"r":0,"t":50,"l":0,"b":0},
+    margin={"r": 0, "t": 50, "l": 0, "b": 0},
     paper_bgcolor='white',
     plot_bgcolor='white'
 )
 
 st.plotly_chart(scatter_fig, use_container_width=True)
 
-
 st.markdown("### Call Volume by Day of Week")
 dow_fig = px.histogram(
-    filtered,
-    x=filtered['timeStamp'].dt.day_name(),
-    category_orders={'day_name()': ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']},
+    filtered.assign(day=filtered['timeStamp'].dt.day_name()),
+    x='day',
+    category_orders={'day': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']},
     title="Call Volume by Day of Week"
 )
 st.plotly_chart(dow_fig, use_container_width=True)
@@ -112,13 +109,13 @@ st.plotly_chart(dow_fig, use_container_width=True)
 st.markdown("### Summary Statistics")
 st.write(filtered[['Category', 'timeStamp', 'zip', 'twp']].describe(include='all'))
 
-
 st.markdown(
     """
-    <div style='text-align: center; padding-top: 30px; font-size: 14px; color: white;'>
+    <div style='text-align: center; padding-top: 30px; font-size: 14px; color: #333;'>
         Developed by Aradhana Singh
     </div>
     """,
     unsafe_allow_html=True
 )
+
 
