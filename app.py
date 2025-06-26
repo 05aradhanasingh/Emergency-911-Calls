@@ -63,23 +63,31 @@ else:
     st.warning("No data to display on heatmap. Adjust filters or check your dataset.")
 
 st.markdown("### Scatter Geo Plot by Category")
+
 philly_lat = 39.9526
 philly_lon = -75.1652
 
+scatter_sample = filtered.sample(min(len(filtered), sample_size))
+
 scatter_fig = px.scatter_geo(
-    filtered.sample(min(len(filtered), sample_size)),
+    scatter_sample,
     lat='lat',
     lon='lng',
     color='Category',
-    title='911 Calls Distribution by Category',
+    title='911 Calls Distribution by Category (Philadelphia)',
+    hover_data={'lat': True, 'lng': True, 'Category': True},
     height=600
 )
+
 scatter_fig.update_geos(
     projection_scale=25,
     center={"lat": philly_lat, "lon": philly_lon},
-    showland=True, fitbounds="locations"
+    showland=True,
+    fitbounds="locations"
 )
+
 st.plotly_chart(scatter_fig, use_container_width=True)
+
 
 st.markdown("### Call Volume by Hour")
 time_fig = px.histogram(
