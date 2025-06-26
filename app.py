@@ -115,7 +115,7 @@ st.write(filtered[['Category', 'timeStamp', 'zip', 'twp']].describe(include='all
 
 st.markdown(
     """
-    <div style='text-align: center; padding-top: 30px; font-size: 14px; color: grey;'>
+    <div style='text-align: center; padding-top: 30px; font-size: 14px; color: white;'>
         Developed by Aradhana Singh
     </div>
     """,
