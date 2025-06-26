@@ -8,14 +8,25 @@ from streamlit_folium import st_folium
 st.set_page_config(page_title="911 Calls Dashboard", layout="wide")
 
 @st.cache_data
+@st.cache_data
 def load_data(path):
-    df = pd.read_csv(path, compression='gzip')
+    try:
+        df = pd.read_csv(path, compression='gzip')
+    except FileNotFoundError:
+        st.error(f"File not found: {path}. Please upload the dataset.")
+        st.stop()
+    except Exception as e:
+        st.error(f"Error reading file: {e}")
+        st.stop()
+
     if 'title' not in df.columns:
         st.error("'title' column is missing in the dataset.")
         st.stop()
+
     df['Category'] = df['title'].apply(lambda x: x.split(':')[0] if ':' in x else x)
     df['timeStamp'] = pd.to_datetime(df['timeStamp'], errors='coerce')
     return df.dropna(subset=['timeStamp', 'lat', 'lng'])
+
 
 df = load_data("compressed_data.csv.gz")
 
