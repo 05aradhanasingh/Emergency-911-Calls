@@ -30,19 +30,19 @@ def load_data(path):
 
     df['timeStamp'] = pd.to_datetime(df['timeStamp'], errors='coerce')
     df = df.dropna(subset=['timeStamp', 'lat', 'lng'])
-
     return df
 
 df = load_data("compressed_data.csv.gz")
 
-assert 'Category' in df.columns, "'Category' column creation failed!"
+assert 'Category' in df.columns, "'Category' column creation failed"
 
-st.title(" 911 Calls Exploratory Dashboard")
-st.markdown("##### Acknowledgements: Data provided by montcoalert.org")
+st.title("911 Calls Dashboard")
+st.markdown("Data provided by montcoalert.org")
 
-st.sidebar.header("Filters")
-categories = st.sidebar.multiselect(
-    "Select Emergency Categories",
+st.subheader("Filters")
+
+categories = st.multiselect(
+    "Emergency Categories",
     options=sorted(df['Category'].unique()),
     default=sorted(df['Category'].unique())
 )
@@ -50,15 +50,15 @@ categories = st.sidebar.multiselect(
 min_date = df['timeStamp'].min().date()
 max_date = df['timeStamp'].max().date()
 
-date_range = st.sidebar.date_input(
-    "Date range",
+date_range = st.date_input(
+    "Date Range",
     [min_date, max_date],
     min_value=min_date,
     max_value=max_date
 )
 
-sample_size = st.sidebar.slider(
-    "Sample size for scatter plot",
+sample_size = st.slider(
+    "Sample Size for Scatter Plot",
     min_value=100, max_value=5000, value=1000, step=100
 )
 
@@ -71,10 +71,10 @@ if filtered.empty:
     st.warning("No data found for the selected filters.")
     st.stop()
 
-st.markdown("### 🔍 Data Preview")
+st.subheader("Data Preview")
 st.dataframe(filtered.head())
 
-st.markdown("###  Heatmap of 911 Calls")
+st.subheader("Heatmap of 911 Calls")
 heat_data = filtered[['lat', 'lng']].dropna().astype(float).values.tolist()
 
 if heat_data:
@@ -88,7 +88,7 @@ if heat_data:
 else:
     st.warning("No data to show on heatmap.")
 
-st.markdown("### 🗺️ Scatter Geo Plot by Category (Philadelphia Area)")
+st.subheader("Scatter Geo Plot by Category")
 
 philly_lat = 39.9526
 philly_lon = -75.1652
@@ -99,7 +99,7 @@ scatter_fig = px.scatter_geo(
     lat='lat',
     lon='lng',
     color='Category',
-    title='911 Calls by Category (Philadelphia Area)',
+    title='911 Calls by Category',
     hover_data=['desc', 'zip', 'twp'],
     scope='usa',
     height=600
@@ -114,16 +114,16 @@ scatter_fig.update_geos(
 
 st.plotly_chart(scatter_fig, use_container_width=True)
 
-st.markdown("###  Call Volume by Day of Week")
+st.subheader("Call Volume by Day of Week")
 dow_fig = px.histogram(
     filtered.assign(day=filtered['timeStamp'].dt.day_name()),
     x='day',
     category_orders={'day': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']},
-    title="Call Volume Distribution by Day"
+    title="Call Volume by Day"
 )
 st.plotly_chart(dow_fig, use_container_width=True)
 
-st.markdown("###  Summary Statistics")
+st.subheader("Summary Statistics")
 st.write(filtered[['Category', 'timeStamp', 'zip', 'twp']].describe(include='all'))
 
 st.markdown(
