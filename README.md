@@ -9,23 +9,21 @@ It also features an interactive Streamlit dashboard for real-time filtering, geo
 
 The dataset is from Kaggle and includes emergency call records from Montgomery County, PA.
 
-- **Key columns**: `lat`, `lng`, `title`, `timeStamp`, `zip`, `twp`, `desc`
-- Over **500,000 call records**
+- Key columns**: `lat`, `lng`, `title`, `timeStamp`, `zip`, `twp`, `desc`
+- Over 500,000 call records
 - Covers categories like EMS, Fire, and Traffic
 
 ---
 
 ###  Sample EDA Visuals
 
-![Call Volume by Hour](image.png)  
-*911 call frequency by hour of day*
-
+!(image.png)  
 
 ---
 
 ## Geospatial Mapping
 
-Used **Folium** to generate interactive heatmaps of call density:
+Used Folium to generate interactive heatmaps of call density:
 
 - Location plotted using `lat` and `lng`
 - Call intensity visualized using color gradients
@@ -34,4 +32,4 @@ Used **Folium** to generate interactive heatmaps of call density:
 
 ## Streamlit Dashboard Features
 
-Built an interactive web app using **Streamlit**.
+Built an interactive web app using Streamlit.
