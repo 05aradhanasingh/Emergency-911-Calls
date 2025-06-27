@@ -9,7 +9,7 @@ It also features an interactive Streamlit dashboard for real-time filtering, geo
 
 The dataset is from Kaggle and includes emergency call records from Montgomery County, PA.
 
-- Key columns**: `lat`, `lng`, `title`, `timeStamp`, `zip`, `twp`, `desc`
+- Key columns: `lat`, `lng`, `title`, `timeStamp`, `zip`, `twp`, `desc`
 - Over 500,000 call records
 - Covers categories like EMS, Fire, and Traffic
 
