@@ -17,13 +17,13 @@ The dataset is from Kaggle and includes emergency call records from Montgomery C
 
 ###  Sample EDA Visuals
 Number of traffic related calls by date :
-![No. of traffic calls by date](traffic.png)
+![No. of traffic calls by date](images/traffic.png)
 
 Number of EMS related calls by date :
-![No. of traffic calls by date](ems.png)
+![No. of traffic calls by date](images/ems.png)
 
 Number of fire related calls by date :
-![No. of traffic calls by date](fire.png)
+![No. of traffic calls by date](images/fire.png)
 
 ---
 
