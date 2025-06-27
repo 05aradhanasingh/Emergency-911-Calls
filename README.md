@@ -17,7 +17,7 @@ The dataset is from Kaggle and includes emergency call records from Montgomery C
 
 ###  Sample EDA Visuals
 
-![No. of traffic calls by date](image.png)
+![No. of traffic calls by date](traffic.png)
 
 ---
 
