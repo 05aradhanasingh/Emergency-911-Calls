@@ -33,6 +33,10 @@ df = load_data("compressed_data.csv.gz")
 st.title("911 Calls Exploratory Dashboard")
 st.markdown("##### Acknowledgements: Data provided by montcoalert.org")
 
+years = sorted(df['timeStamp'].dt.year.unique())
+selected_year = st.sidebar.selectbox("Select Year", options=years, index=len(years) - 1)
+
+
 st.sidebar.header("Filters")
 categories = st.sidebar.multiselect(
     "Select Emergency Categories",
@@ -52,14 +56,13 @@ sample_size = st.sidebar.slider(
 
 filtered = df[
     (df['Category'].isin(categories)) &
-    (df['timeStamp'].dt.date.between(date_range[0], date_range[1]))
+    (df['timeStamp'].dt.date.between(date_range[0], date_range[1])) &
+    (df['timeStamp'].dt.year == selected_year)
 ]
 
-# Preview data
 st.markdown("### Data Preview")
 st.dataframe(filtered.head())
 
-# Heatmap
 st.markdown("### Heatmap of All Calls")
 heat_data = filtered[['lat', 'lng']].dropna().values.tolist()
 
@@ -94,7 +97,6 @@ scatter_fig.update_geos(
 )
 st.plotly_chart(scatter_fig, use_container_width=True)
 
-# Call volume by hour
 st.markdown("### Call Volume by Hour")
 time_fig = px.histogram(
     filtered,
@@ -105,7 +107,6 @@ time_fig = px.histogram(
 )
 st.plotly_chart(time_fig, use_container_width=True)
 
-# Call volume by day of week
 st.markdown("### Call Volume by Day of Week")
 dow_fig = px.histogram(
     filtered,
@@ -115,7 +116,6 @@ dow_fig = px.histogram(
 )
 st.plotly_chart(dow_fig, use_container_width=True)
 
-# Summary stats
 st.markdown("### Summary Statistics")
 st.write(filtered[['Category', 'timeStamp', 'zip', 'twp']].describe(include='all'))
 
