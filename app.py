@@ -38,26 +38,12 @@ categories = st.sidebar.multiselect(
     default=df['Category'].unique()
 )
 
-date_range = st.sidebar.date_input(
-    "Date range",
-    [df['timeStamp'].min().date(), df['timeStamp'].max().date()]
-)
-
-if isinstance(date_range, list) and len(date_range) == 2:
-    start_date, end_date = date_range
-else:
-    st.warning("Please select a valid start and end date.")
-    st.stop()
-
 sample_size = st.sidebar.slider(
     "Sample size for scatter plot",
     min_value=100, max_value=5000, value=1000, step=100
 )
 
-filtered = df[
-    (df['Category'].isin(categories)) &
-    (df['timeStamp'].dt.date.between(start_date, end_date))
-]
+filtered = df[df['Category'].isin(categories)]
 
 st.markdown("### Data Preview")
 st.dataframe(filtered.head())
@@ -74,7 +60,7 @@ if heat_data:
     HeatMap(heat_data, radius=10, blur=25).add_to(heatmap_map)
     st_folium(heatmap_map, width=700, height=500)
 else:
-    st.warning("No data to display on heatmap. Adjust filters or check your dataset.")
+    st.warning("No data to display on heatmap. Check your dataset or category filter.")
 
 st.markdown("### Scatter Geo Plot by Category")
 philly_lat = 39.9526
@@ -125,4 +111,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
