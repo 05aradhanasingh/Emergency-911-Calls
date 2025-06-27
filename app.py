@@ -8,7 +8,6 @@ from streamlit_folium import st_folium
 st.set_page_config(page_title="911 Calls Dashboard", layout="wide")
 
 @st.cache_data
-@st.cache_data
 def load_data(path):
     try:
         df = pd.read_csv(path, compression='gzip')
@@ -27,7 +26,6 @@ def load_data(path):
     df['timeStamp'] = pd.to_datetime(df['timeStamp'], errors='coerce')
     return df.dropna(subset=['timeStamp', 'lat', 'lng'])
 
-
 df = load_data("compressed_data.csv.gz")
 
 st.title("911 Calls Exploratory Dashboard")
@@ -35,7 +33,6 @@ st.markdown("##### Acknowledgements: Data provided by montcoalert.org")
 
 years = sorted(df['timeStamp'].dt.year.unique())
 selected_year = st.sidebar.selectbox("Select Year", options=years, index=len(years) - 1)
-
 
 st.sidebar.header("Filters")
 categories = st.sidebar.multiselect(
@@ -63,7 +60,7 @@ filtered = df[
 st.markdown("### Data Preview")
 st.dataframe(filtered.head())
 
-st.markdown("### Heatmap of All Calls")
+st.markdown("### Heatmap of 911 Calls")
 heat_data = filtered[['lat', 'lng']].dropna().values.tolist()
 
 if heat_data:
@@ -73,11 +70,23 @@ if heat_data:
         tiles='CartoDB positron'
     )
     HeatMap(heat_data, radius=10, blur=25).add_to(heatmap_map)
+
+    legend_html = '''
+     <div style="position: fixed;
+                 bottom: 50px; left: 50px; width: 160px; height: 90px;
+                 border:2px solid grey; z-index:9999; font-size:14px;
+                 background-color: white; padding: 10px;">
+     <b>Heatmap Intensity</b><br>
+     <i style="background: #ffffb2; width: 18px; height: 18px; float: left; margin-right: 5px;"></i> Low<br>
+     <i style="background: #fd8d3c; width: 18px; height: 18px; float: left; margin-right: 5px;"></i> Medium<br>
+     <i style="background: #e31a1c; width: 18px; height: 18px; float: left; margin-right: 5px;"></i> High
+     </div>
+     '''
+    heatmap_map.get_root().html.add_child(folium.Element(legend_html))
     st_folium(heatmap_map, width=700, height=500)
 else:
     st.warning("No data to display on heatmap. Adjust filters or check your dataset.")
 
-# Geo Scatter
 st.markdown("### Scatter Geo Plot by Category")
 philly_lat = 39.9526
 philly_lon = -75.1652
@@ -127,3 +136,4 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
