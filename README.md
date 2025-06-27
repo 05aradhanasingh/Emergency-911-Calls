@@ -38,4 +38,8 @@ Used Folium to generate interactive heatmaps of call density:
 
 ## Streamlit Dashboard Features
 
-Built an interactive web app using Streamlit.
+Built an interactive dashboard  using Streamlit.
+
+Dashboard Preview:
+![dashboard](images/dashboard.png)
+
